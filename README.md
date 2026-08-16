@@ -179,8 +179,7 @@ Test that you can decrypt the encrypted copy before relying on it.
 
 This is an independent community tool. It is not an official Omarchy project.
 
-Bug reports and focused pull requests are welcome. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) first.
+Bug reports and focused pull requests are welcome.
 
 Report security or privacy problems through [SECURITY.md](SECURITY.md). Do not
 post them in a public issue.
