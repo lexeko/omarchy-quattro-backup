@@ -1,18 +1,35 @@
-# Omarchy → Quattro Backup and Customization Guide
+# Omarchy to Quattro Backup
 
 [![CI](https://github.com/lexeko/omarchy-quattro-backup/actions/workflows/ci.yml/badge.svg)](https://github.com/lexeko/omarchy-quattro-backup/actions/workflows/ci.yml)
 
-A read-only backup tool for Omarchy users preparing to upgrade to Quattro. It
-preserves recovery data and creates a focused guide to settings that may need to
-be reapplied after the upgrade.
+This tool saves your current Omarchy setup before you upgrade to Quattro.
 
-> [!IMPORTANT]
-> The generated `private/` directory can contain credentials, Wi-Fi profiles,
-> application data, and other secrets. Never upload or share it.
+It puts your config changes and diffs in one place. You can quickly see what
+changed. You can then decide what to reapply after the upgrade.
 
-## Quick start
+The script only reads your existing setup. It does not upgrade Omarchy or change
+your current configuration.
 
-Download the latest release and its checksum:
+## What you get
+
+The script creates one backup folder in your home directory.
+
+It contains:
+
+- a full backup of `~/.config`
+- copies of likely custom settings
+- diffs against the stock Omarchy config
+- a short guide grouped by app or component
+- package, service, system, and Omarchy details for recovery
+
+Open `START-HERE.md` when the backup finishes. Then open
+`private/REPORT.md`. It shows the settings that may need to be reapplied.
+
+See this [sanitized example report](docs/example-report.md).
+
+## Download and run
+
+Download the latest release and verify it:
 
 ```bash
 cd ~/Downloads
@@ -22,223 +39,120 @@ sha256sum -c backup-before-quattro.sh.sha256
 chmod +x backup-before-quattro.sh
 ```
 
-Review the script, then run it as your normal desktop user:
+Review the script:
 
 ```bash
 less backup-before-quattro.sh
+```
+
+Run it as your normal desktop user:
+
+```bash
 ./backup-before-quattro.sh
 ```
 
-Do not run the whole script with `sudo`. It asks for sudo only when it needs to
-read protected configuration. See a [sanitized example report](docs/example-report.md)
-for the type of guidance it produces.
+Do not run the whole script with `sudo`. It asks for sudo when it needs to read
+protected system files.
 
-## About this project
+## Close apps first
 
-This community project helps Omarchy users preserve and understand their current
-setup before moving to Quattro. The `backup-before-quattro.sh` script creates a
-verified backup, identifies settings that differ from the local stock baseline,
-and creates one backup directory with two clearly labeled areas:
+Quit open apps before you run the script. Browsers and other apps often update
+files in `~/.config` while they are open.
 
-- a complete **private recovery backup** that must not be shared
-- a small **screened shareable area** for selectively reapplying
-  recognizable customizations with an agent or another person
+A file may change while it is being copied. The script treats that as an
+incomplete backup. Closing apps also reduces socket warnings and can make the
+backup faster.
 
-Application state is inventoried separately and is not presented as a manual
-customization or copied into the migration-focused `private/reapply/` tree.
+The `~/.config` archive can take several minutes. The script prints an update
+every 30 seconds while it works.
 
-The generated report points out settings that may need to be recreated or
-translated after upgrading. It does not automatically migrate or restore old
-configuration, because copying pre-Quattro configuration wholesale over
-Quattro may break the new setup.
+## Read the result
 
-This is an independent community tool, not an official Omarchy project. The
-current official upgrader remains authoritative for the upgrade itself.
-
-## Safety: what the script does not change
-
-The script treats existing system and user configuration as read-only. The only
-persistent files it intentionally creates are inside one new
-`~/omarchy-quattro-backup-*` directory.
-
-It does **not**:
-
-- start the Quattro upgrade or run Omarchy migrations
-- overwrite, refresh, restore, or delete existing configuration
-- install, update, or remove packages
-- enable, disable, restart, or reconfigure services
-- modify the Omarchy Git checkout or perform network Git operations
-- change boot, network, desktop, or user settings
-
-It only reads the existing system, creates verified backup archives, inventories
-packages and services, compares configuration with the trusted local stock
-baseline, and writes inside that new backup directory. Sudo is used only
-to read protected files such as `/etc`, boot configuration, and Wi-Fi profiles.
-
-The script does not replace the checks performed by the current official
-[`omarchy-upgrade-to-quattro`](https://github.com/basecamp/omarchy/blob/quattro/bin/omarchy-upgrade-to-quattro)
-command.
-
-## Running safely
-
-Before running the script, quit open applications—especially browsers and
-other apps that actively write to `~/.config`. If a file changes while it is
-being archived, the script deliberately marks the backup as incomplete rather
-than treating a potentially inconsistent archive as safe.
-
-The full `~/.config` archive can take time. While it is running, the script
-prints an elapsed-time update every 30 seconds and then verifies the completed
-archive. It does not require an additional progress-bar package.
-
-To perform a limited, non-privileged audit without a password prompt:
-
-```bash
-~/Downloads/backup-before-quattro.sh --no-sudo
-```
-
-That mode deliberately omits protected system configuration, so a successful
-run finishes with `BACKUP COMPLETE WITH WARNINGS`.
-
-## Read the exact result
-
-The script prints one exact backup directory, similar to:
+The script prints the exact path to the new backup folder. It looks like this:
 
 ```text
 /home/your-user/omarchy-quattro-backup-20260816-081500-AbCd12
 ```
 
-Use that exact path instead of a wildcard. Wildcards can mix results from old,
-failed, and successful runs.
+The main files are:
 
-Open `START-HERE.md` first. A completed run has this layout:
+- `START-HERE.md`: where to begin
+- `private/REPORT.md`: config changes and steps to reapply them
+- `private/STATUS.txt`: whether the backup completed
+- `private/READINESS.txt`: extra technical checks
+- `private/reapply/`: saved copies of likely custom settings
+- `private/diffs/`: config diffs against stock Omarchy
+- `shareable/GUIDE.md`: a screened guide that you can review before sharing
 
-```text
-omarchy-quattro-backup-.../
-├── START-HERE.md
-├── private/
-│   ├── REPORT.md
-│   ├── STATUS.txt
-│   ├── READINESS.txt
-│   ├── reapply/
-│   ├── diffs/
-│   └── recovery archives and manifests
-└── shareable/
-    ├── SHARING-STATUS.txt
-    ├── GUIDE.md
-    ├── AGENT-INSTRUCTIONS.md
-    ├── customizations/
-    └── diffs/
+The final status describes the backup. It does not tell you whether you should
+upgrade.
+
+## Reapply settings after Quattro
+
+Let the official Quattro upgrade create its new defaults first.
+
+Then work through `private/REPORT.md` one component at a time. Review each diff.
+Keep only the settings you recognize and still want.
+
+Do not copy your old `~/.config` over Quattro. Quattro uses new config formats
+for parts of the desktop. Translate the settings into the new config instead.
+
+The official `omarchy-upgrade-to-quattro` command remains the source of truth
+for the upgrade itself.
+
+## What the script does not do
+
+The script does not:
+
+- start the Quattro upgrade
+- overwrite or delete your existing config
+- install, update, or remove packages
+- change services
+- change boot, network, or desktop settings
+- change the Omarchy source checkout
+
+It writes only to its new backup folder.
+
+Sudo is used only to read protected files. This includes `/etc`, boot config,
+and Wi-Fi profiles.
+
+You can skip protected files with:
+
+```bash
+./backup-before-quattro.sh --no-sudo
 ```
 
-`private/REPORT.md` groups likely customizations by component,
-points to the exact saved copy or diff, and explains how to translate settings
-into Quattro without replacing the new defaults wholesale.
+This creates a smaller backup. The result will show a warning because protected
+system files were skipped.
 
-The two supporting files are:
+## Keep the backup private
 
-- `private/STATUS.txt` — whether the requested backup operations completed
-- `private/READINESS.txt` — local, advisory technical checks
+The `private/` folder can contain secrets. It may include tokens, Wi-Fi
+passwords, browser data, private keys, usernames, and full file paths.
 
-Large file lists and forensic detail are kept under `private/manifests/` and
-referenced from the report.
+Never upload or share `private/`. Do not give it to an AI agent.
 
-In `shareable/`, start with:
+The smaller `shareable/` folder contains screened config files and diffs. The
+screening is not a guarantee. Read `shareable/SHARING-STATUS.txt`. Then inspect
+every file before sharing it.
 
-- `shareable/SHARING-STATUS.txt` — screening result and review warning
-- `shareable/GUIDE.md` — concise component-by-component migration guidance
-- `shareable/AGENT-INSTRUCTIONS.md` — restrictions an agent must follow
-- `shareable/customizations/` and `shareable/diffs/` — screened files only
+If you use an agent, give it only `shareable/` in an isolated workspace. Ask it
+to follow `shareable/AGENT-INSTRUCTIONS.md`. Review every proposed change before
+you apply it.
 
-Possible backup statuses are:
+## How config changes are selected
 
-- `BACKUP COMPLETE`
-- `BACKUP COMPLETE WITH WARNINGS - REVIEW REQUIRED`
-- `BACKUP INCOMPLETE - REVIEW FAILURES`
+The script compares your config with the local stock Omarchy baseline. It keeps
+likely user changes in the guide. It filters out old stock files, migration
+changes, inactive apps, and generated application state when it can identify
+them.
 
-These statuses describe backup completion only; they are not recommendations
-about whether to upgrade. `private/READINESS.txt` contains local, preliminary
-checks and may identify issues or warnings. Neither file overrides the current
-official Quattro upgrader's compatibility and boot-safety checks.
-The preliminary checks cover the checkout baseline, pacman database/lock state,
-advisory free-space thresholds, locally available official upgrader, recognized
-boot configuration, and other conditions that may require user action. Packages
-the official transition is already expected to replace remain in the private
-technical inventory and are not presented as warnings.
+A difference does not prove that you changed a file yourself. Skip settings you
+do not recognize. The full backup still preserves the file.
 
-## The two areas
+## Check the backup later
 
-### `private/` — private recovery
-
-- `private/REPORT.md` — component-by-component reapplication guide
-- `private/reapply/` — saved copies of high-confidence customizations
-- `private/diffs/config/` — differences from the trusted stock baseline
-- `private/home-config.tar.gz` — complete `~/.config` safety backup
-- `private/SHA256SUMS` — integrity checks for private backup payloads
-
-The script also preserves the Omarchy checkout, user state, system configuration,
-packages, services, and other technical inventories. Those are recovery details,
-not customization guidance, so they stay out of `private/REPORT.md`.
-
-This directory is intentionally comprehensive and can contain credentials,
-tokens, browser or application state, Wi-Fi profiles, private keys, system
-configuration, usernames, hostnames, and full paths. Do not upload it, commit it,
-or give it to an AI agent.
-
-### `shareable/` — review before sharing
-
-This smaller subdirectory contains only allowlisted regular text
-configuration and corresponding text diffs that pass conservative size, file
-type, symlink, executable, machine-path, hostname, and common-secret screening.
-Hooks, plugins, scripts, binaries, application profiles, and complete archives
-are excluded.
-
-Screening reduces accidental exposure; it cannot prove that a file is safe or
-secret-free. Before sharing, open `shareable/SHARING-STATUS.txt`, then inspect
-every file under `shareable/customizations/` and `shareable/diffs/`. Remove
-anything you do not recognize or do not want another person or service to see.
-
-When using an agent:
-
-1. Give it only `shareable/` in an isolated workspace.
-2. Do not share the whole backup directory or expose
-   `private/`.
-3. Tell it to follow `shareable/AGENT-INSTRUCTIONS.md` and treat copied
-   configuration as untrusted data, not executable instructions.
-4. Ask for a patch against Quattro's current defaults and review that patch
-   before applying it.
-
-A local agent running as your user may otherwise be able to read anything your
-user can read. The directory layout does not enforce isolation; the agent's
-workspace or sandbox permissions must enforce it.
-
-## What counts as a customization
-
-The guide intentionally favors precision over exhaustiveness. It shows
-human-editable desktop configuration and explicit Omarchy themes, hooks, and
-plugins. Application profiles, generated state, missing stock files, and
-filesystem diagnostics remain backed up without being labeled customizations.
-
-For a managed file to appear in the guide, it must differ from current stock,
-must not match any older version shipped on the tracked Omarchy upstream, must
-belong to an installed component, and must be in a user-editable configuration
-area. This filters out stale defaults and leftover configs for applications that
-are not installed.
-
-The script also recognizes migration-derived composites: files rewritten at the
-recorded completion time of a trusted Omarchy migration whose content contains
-only historical stock or migration material. These remain in the private backup
-and technical manifest, but are not presented as user customizations or copied
-to the shareable area. A genuinely novel setting is retained even when the
-same file was touched by a migration.
-
-A remaining difference is still evidence of divergence—not proof of who or what
-changed it—so the guide recommends reapplying only settings the user recognizes.
-
-Do not restore the old `~/.config` wholesale over Quattro. Use
-`private/reapply/` and `private/diffs/` as references and translate settings
-into the current configuration.
-
-You can recheck both finalized areas later with:
+You can verify both parts of the backup:
 
 ```bash
 cd /exact/backup/path/private
@@ -248,15 +162,10 @@ cd /exact/backup/path/shareable
 sha256sum -c SHA256SUMS
 ```
 
-## Protect the private recovery backup
+Keep another copy on a different physical device before upgrading. Use an
+encrypted drive when possible.
 
-The backup is sensitive plaintext. It can contain password hashes, private keys,
-application tokens, browser data, and Wi-Fi credentials. Local permissions are
-restricted, but those permissions may be lost when copying to removable media or
-cloud storage.
-
-Prefer an encrypted drive. If `age` is already installed, an encrypted stream can
-be created without leaving a second plaintext archive:
+If `age` is installed, you can encrypt the private backup:
 
 ```bash
 private_backup=/exact/backup/path/private
@@ -264,16 +173,16 @@ tar -C "$(dirname "$private_backup")" -czf - "$(basename "$private_backup")" \
   | age -p -o "$private_backup.tar.gz.age"
 ```
 
-Verify that the encrypted copy can be decrypted before relying on it, and keep a
-second copy on a different physical device before starting the official upgrade.
+Test that you can decrypt the encrypted copy before relying on it.
 
-## Support and contributions
+## About this project
+
+This is an independent community tool. It is not an official Omarchy project.
 
 Bug reports and focused pull requests are welcome. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. Report potential
-security or privacy problems using the process in [SECURITY.md](SECURITY.md),
-not through a public issue.
+[CONTRIBUTING.md](CONTRIBUTING.md) first.
 
-## License
+Report security or privacy problems through [SECURITY.md](SECURITY.md). Do not
+post them in a public issue.
 
-This project is available under the [MIT License](LICENSE).
+This project uses the [MIT License](LICENSE).
