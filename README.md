@@ -181,7 +181,6 @@ This is an independent community tool. It is not an official Omarchy project.
 
 Bug reports and focused pull requests are welcome.
 
-Report security or privacy problems through [SECURITY.md](SECURITY.md). Do not
-post them in a public issue.
+Do not attach real backups or private config files to GitHub issues.
 
 This project uses the [MIT License](LICENSE).
