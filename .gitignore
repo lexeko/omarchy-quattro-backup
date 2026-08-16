@@ -1,0 +1,20 @@
+# Generated backup output. These directories can contain secrets.
+omarchy-quattro-backup-*/
+private/
+shareable/
+
+# Archives and encrypted backup payloads.
+*.tar
+*.tar.gz
+*.tgz
+*.age
+
+# Local runtime and editor files.
+*.log
+*.tmp
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
